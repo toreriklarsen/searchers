@@ -1,0 +1,17 @@
+[package]
+name = "parsers"
+version = "0.0.1"
+edition = "2024"
+
+[dependencies]
+env_logger = { workspace = true }
+log = { workspace = true }
+serde = { workspace = true }
+zip = "5.1.1"
+walkdir.workspace = true
+md5 = "0.8.0"
+lopdf = {version = "0.38.0"}
+
+[lib]
+name = "parsers"
+path = "src/lib.rs"
