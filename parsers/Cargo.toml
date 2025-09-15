@@ -12,6 +12,9 @@ zip = "5.1.1"
 md5 = "0.8.0"
 lopdf = {version = "0.38.0"}
 
+[dev-dependencies]
+tempfile = { workspace = true }
+
 [lib]
 name = "parsers"
 path = "src/lib.rs"

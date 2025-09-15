@@ -16,5 +16,6 @@ chrono = "0.4.42"
 walkdir = "2.5.0"
 clap = { version = "4.5.47", features = ["derive"] }
 tokio = { version = "1.47.1", features = ["rt", "rt-multi-thread","macros"] }
-serde = { version = "1.0.219", features = ["derive"] }
+serde = { version = "1.0.223", features = ["derive"] }
 anstyle = "1.0.11"
+tempfile = "3.22.0"

@@ -1,12 +1,12 @@
 //#![allow(unused_imports)]
 mod cli;
-mod supportedfiletype;
+mod filetyper;
 
 use chrono::Local;
 use clap::Parser;
 use env_logger::Builder;
 use log::LevelFilter;
-use log::{debug, info, warn};
+use log::{debug};
 use parsers::{docxparser::read_docx_text, pdfparser::read_pdf_text};
 use serde::Serialize;
 use url::Url;
@@ -15,6 +15,7 @@ use std::io::Write;
 use meilisearch_sdk::{client::Client, indexes::Index};
 use tokio::task;
 use walkdir::{DirEntry, WalkDir};
+use filetyper::*;
 
 #[derive(Serialize, Debug)]
 struct SearchDocument {
@@ -26,13 +27,6 @@ struct SearchDocument {
     modified: Option<std::time::SystemTime>,
     size: Option<u64>,
     filetype: Option<String>,
-}
-
-#[derive(Debug, PartialEq)]
-enum SupportedFileType {
-    PDF,
-    DOCX,
-    SHOULDNEVERHAPPEN,
 }
 
 fn is_not_skipped(entry: &DirEntry) -> bool {
@@ -78,9 +72,9 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             let attr = entry.metadata()?;
             let path = entry.path().to_owned();
             let filename = path.to_string_lossy().to_string();
-            let doctype: SupportedFileType = supportedfiletype::get_file_type(&path);
+            let doctype: SupportedFileType = get_file_type(&path);
             
-            if doctype == SupportedFileType::SHOULDNEVERHAPPEN {
+            if doctype == SupportedFileType::Shouldneverhappen {
                 debug!("Skipping unsupported file: {}", filename);
                 continue;
             }
@@ -89,9 +83,9 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             // Start extraction in a new threads
             let handle = task::spawn_blocking(move || {
                 let text = match &doctype {
-                    SupportedFileType::PDF => read_pdf_text(&path),
-                    SupportedFileType::DOCX => read_docx_text(&path),
-                    SupportedFileType::SHOULDNEVERHAPPEN => Err("This should not happen".into())
+                    SupportedFileType::Pdf => read_pdf_text(&path),
+                    SupportedFileType::Docx => read_docx_text(&path),
+                    SupportedFileType::Shouldneverhappen => Err("This should not happen".into())
                 };
 
                 let full_path = env::current_dir().unwrap().join(&path);
