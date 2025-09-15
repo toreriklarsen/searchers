@@ -48,6 +48,10 @@ pub struct Cli {
     /// Enable watch mode
     #[arg(short, long, default_value_t = false)]
     pub watch: bool,
+
+    /// Enable watch mode
+    #[arg(short, long, default_value_t = false)]
+    pub noindex: bool,
 }
 
 #[cfg(test)]

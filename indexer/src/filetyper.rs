@@ -70,9 +70,7 @@ pub fn get_file_type(path: &Path) -> SupportedFileType {
         }
         None => {
             debug!("File: {} is of unknown type", filename);
-        } //Err(e) => {
-          //  warn!("Error determining file type for {}: {}", filename, e);
-          //}
+        }
     }
 
     doctype

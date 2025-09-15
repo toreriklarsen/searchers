@@ -1,16 +1,13 @@
-//mod filetyper;
-
-use walkdir::DirEntry;
+use crate::filetyper::{SupportedFileType, get_file_type};
 use log::debug;
-use std::env;
-use std::time::SystemTime;
-use url::Url;
+use parsers::{docxparser::read_docx_text, pdfparser::read_pdf_text};
 use serde::Serialize;
-use parsers::{pdfparser::read_pdf_text, docxparser::read_docx_text};
-use crate::filetyper::{get_file_type, SupportedFileType};
+use std::time::SystemTime;
+use std::{env, path::PathBuf};
+use url::Url;
 
 #[derive(Serialize, Debug)]
-struct SearchDocument {
+pub struct SearchDocument {
     id: String,
     filename: String,
     url: Url,
@@ -21,15 +18,14 @@ struct SearchDocument {
     filetype: Option<String>,
 }
 
-fn process_file(entry: DirEntry) -> std::result::Result<(), Box<dyn std::error::Error>> {
-    let attr = entry.metadata()?;
-    let path = entry.path().to_owned();
+pub fn process_file(path: PathBuf) -> Option<SearchDocument> {
+    let attr = path.metadata().ok()?;
     let filename = path.to_string_lossy().to_string();
     let doctype: SupportedFileType = get_file_type(&path);
 
     if doctype == SupportedFileType::Shouldneverhappen {
         debug!("Skipping unsupported file: {}", filename);
-        return Ok(());
+        return None;
     }
     debug!(
         "Spawning task for file: {}, doctype {:?}",
@@ -44,7 +40,7 @@ fn process_file(entry: DirEntry) -> std::result::Result<(), Box<dyn std::error::
 
     let full_path = env::current_dir().unwrap().join(&path);
     //debug!("Full file path {}", &full_path.to_string_lossy());
-    
+
     match text {
         Ok(content) => Some(SearchDocument {
             id: format!("{:x}", md5::compute(&filename)),
@@ -62,7 +58,5 @@ fn process_file(entry: DirEntry) -> std::result::Result<(), Box<dyn std::error::
             },
         }),
         Err(_) => None,
-    };
-    
-    Ok(())
+    }
 }

@@ -981,6 +981,7 @@ dependencies = [
  "md5",
  "meilisearch-sdk",
  "parsers",
+ "rayon",
  "serde",
  "tempfile",
  "tokio",
