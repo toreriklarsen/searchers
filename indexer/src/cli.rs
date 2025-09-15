@@ -2,7 +2,6 @@ use std::path::PathBuf;
 use clap::Parser;
 use anstyle::{AnsiColor, Color, Style};
 
-
 fn get_styles() -> clap::builder::Styles {
     clap::builder::Styles::styled()
         .header(
@@ -50,9 +49,6 @@ pub struct Cli {
     #[arg(short, long, default_value_t = false)]
     pub watch: bool,
 }
-
-
-
 
 #[cfg(test)]
 mod tests {

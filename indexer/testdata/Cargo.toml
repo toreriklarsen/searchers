@@ -17,8 +17,6 @@ walkdir.workspace = true
 md5 = "0.8.0"
 meilisearch-sdk = "0.29.1"
 lopdf = {version = "0.38.0"}
-infer = "0.19.0"
-url = "2.5.7"
 
 [[bin]]
 name = "indexer"
