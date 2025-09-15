@@ -1,15 +1,22 @@
 use log::debug;
+use md5;
 use lopdf::Document;
-use std::path::PathBuf;
+use std::io::Read;
+use std::{fs::File, path::PathBuf};
 
-pub fn read_pdf_text(path: &PathBuf) -> std::result::Result<String, Box<dyn std::error::Error>> {
+pub fn read_pdf_text(path: &PathBuf) -> std::result::Result<(String, String), Box<dyn std::error::Error>> {
     debug!(" read_pdf_text");
 
-    let doc = Document::load(path)?;
+    let mut file = File::open(path)?;
+    let mut buffer = Vec::new();
+    file.read_to_end(&mut buffer)?;
+
+    let doc = Document::load_mem(&buffer)?;
     let page_numbers = doc.get_pages().keys().cloned().collect::<Vec<_>>();
     let text = doc.extract_text(&page_numbers)?;
+    let sign = format!("{:x}", md5::compute(buffer));
 
-    Ok(text)
+    Ok((text, sign))
 }
 
 #[cfg(test)]
@@ -79,7 +86,7 @@ mod tests {
         let result = read_pdf_text(&pdf_path);
         eprintln!("After2 = {:?}", pdf_path.exists());
         assert!(result.is_ok());
-        let text = result.unwrap();
+        let (_sign, text) = result.unwrap();
         assert!(text.contains("Test PDF"));
     }
 

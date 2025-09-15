@@ -1,13 +1,20 @@
 use log::debug;
 use std::fs::File;
 use std::io::Read;
+use std::io::Cursor;
 use std::path::Path;
 use zip::read::ZipArchive;
 
-pub fn read_docx_text(path: &Path) -> std::result::Result<String, Box<dyn std::error::Error>> {
+pub fn read_docx_text(path: &Path) -> std::result::Result<(String, String), Box<dyn std::error::Error>> {
     debug!(" read_docx_text");
-    let file = File::open(path)?;
-    let mut archive = ZipArchive::new(file)?;
+
+    let mut file = File::open(path)?;
+    let mut buffer = Vec::new();
+    file.read_to_end(&mut buffer)?;
+    let sign = format!("{:x}", md5::compute(&mut buffer));
+    let cursor = Cursor::new(&mut buffer);
+
+    let mut archive = ZipArchive::new(cursor)?;
 
     let mut doc_xml = archive.by_name("word/document.xml")?;
     let mut xml_content = String::new();
@@ -24,7 +31,7 @@ pub fn read_docx_text(path: &Path) -> std::result::Result<String, Box<dyn std::e
         .collect::<Vec<_>>()
         .join(" ");
 
-    Ok(text)
+    Ok((text, sign))
 }
 
 #[cfg(test)]
@@ -64,7 +71,7 @@ mod tests {
 
         let result = read_docx_text(&file_path);
         assert!(result.is_ok());
-        assert!(result.unwrap().contains("Hello, world!"));
+        assert!(result.unwrap().0.contains("Hello, world!"));
     }
 
     #[test]
@@ -90,9 +97,9 @@ mod tests {
         zip.finish().unwrap();
 
         let result = read_docx_text(&file_path).unwrap();
-        assert!(result.contains("First"));
-        assert!(result.contains("Second"));
-        assert!(result.contains("Third"));
+        assert!(result.0.contains("First"));
+        assert!(result.0.contains("Second"));
+        assert!(result.0.contains("Third"));
     }
 
     #[test]
@@ -124,6 +131,6 @@ mod tests {
         zip.finish().unwrap();
 
         let result = read_docx_text(&file_path).unwrap();
-        assert_eq!(result.trim(), "");
+        assert_eq!(result.0.trim(), "");
     }
 }

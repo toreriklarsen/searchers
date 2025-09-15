@@ -16,6 +16,7 @@ pub struct SearchDocument {
     modified: Option<SystemTime>,
     size: Option<u64>,
     filetype: Option<String>,
+    filehash: String,
 }
 
 pub fn process_file(path: PathBuf) -> Option<SearchDocument> {
@@ -47,7 +48,7 @@ pub fn process_file(path: PathBuf) -> Option<SearchDocument> {
             filename,
             url: Url::from_file_path(full_path)
                 .unwrap_or_else(|_| Url::parse("file:///unknown").unwrap()),
-            content: content.into(),
+            content: content.0.into(),
             created: attr.created().ok(),
             modified: attr.modified().ok(),
             size: attr.len().into(),
@@ -56,6 +57,7 @@ pub fn process_file(path: PathBuf) -> Option<SearchDocument> {
             } else {
                 "unknown".to_string().into()
             },
+            filehash: content.1,
         }),
         Err(_) => None,
     }
